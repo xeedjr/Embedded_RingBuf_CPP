@@ -44,10 +44,12 @@
     #endif
 
 #else
-    #define RB_ATOMIC_START {
-    #define RB_ATOMIC_END }
-    #warning "Operations on the buffer in ISRs are not safe!"
-    #warning "Impliment RB_ATOMIC_START and RB_ATOMIC_END macros for safe ISR operation!"
+    #include <task.h>
+
+    #define RB_ATOMIC_START do { taskENTER_CRITICAL();
+    #define RB_ATOMIC_END taskEXIT_CRITICAL(); } while(0);
+    //#warning "Operations on the buffer in ISRs are not safe!"
+    //#warning "Impliment RB_ATOMIC_START and RB_ATOMIC_END macros for safe ISR operation!"
 #endif
 
 #endif

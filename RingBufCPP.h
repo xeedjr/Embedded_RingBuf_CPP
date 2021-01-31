@@ -45,6 +45,22 @@ bool add(const Type &obj, bool overwrite=false)
     return !full;
 }
 
+bool addISR(const Type &obj, bool overwrite=false)
+{
+    bool full = false;
+//    RB_ATOMIC_START
+    {
+        full = isFullISR();
+        if (!full || overwrite) {
+            _buf[_head] = obj;
+            _head = (_head + 1)%MaxElements;
+            _numElements = full ? _numElements : (_numElements + 1);
+        }
+    }
+//    RB_ATOMIC_END
+
+    return !full;
+}
 
 /**
 * Remove last element from buffer, and copy it to dest
@@ -106,6 +122,18 @@ bool isFull() const
     return ret;
 }
 
+bool isFullISR() const
+{
+    bool ret;
+
+//    RB_ATOMIC_START
+    {
+        ret = _numElements >= MaxElements;
+    }
+    //RB_ATOMIC_END
+
+    return ret;
+}
 
 /**
 * Return: number of elements in buffer
@@ -152,10 +180,10 @@ size_t getTail() const
 
 
 // underlying array
-Type _buf[MaxElements];
+Type _buf[MaxElements] = {0};
 
-size_t _head;
-size_t _numElements;
+size_t _head = 0;
+size_t _numElements = 0;
 private:
 
 };
